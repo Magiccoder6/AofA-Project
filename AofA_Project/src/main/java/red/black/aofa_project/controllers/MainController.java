@@ -59,7 +59,7 @@ public class MainController implements Initializable {
             }
             else {
                 int key = Integer.parseInt(textField.getText());
-                nodes.add(key);
+
                 if (tree.search(key)) {
                     view.displayTree();
                     view.setStatus(key + " is already present!");
@@ -67,8 +67,11 @@ public class MainController implements Initializable {
                     tree.insert(key);
                     view.displayTree();
                     view.setStatus(key + " is inserted!");
+                    nodes.add(key);
                 }
                 textField.clear();
+
+                System.out.println(nodes.toString());
             }
         });
 
@@ -82,6 +85,9 @@ public class MainController implements Initializable {
                 tree.delete(key);
                 view.displayTree();
                 view.setStatus(key+" is replaced by its predecessor and is deleted!");
+
+                nodes.remove(Integer.valueOf(key));
+                System.out.println(nodes.toString());
             }
             textField.clear();
         });
