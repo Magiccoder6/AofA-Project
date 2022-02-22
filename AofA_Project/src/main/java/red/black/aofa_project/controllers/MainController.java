@@ -4,14 +4,18 @@ import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
+import javafx.scene.Group;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
+import javafx.scene.text.Text;
 import javafx.util.Duration;
+import red.black.aofa_project.models.TreeNode;
 import red.black.aofa_project.repository.*;
 import java.net.URL;
 import java.util.ArrayList;
@@ -77,18 +81,50 @@ public class MainController implements Initializable {
         play.setOnMouseClicked(e->{
 
 
-            moveProcessToProcessor();
+
 
         });
     }
 
-    public void moveProcessToProcessor(){
-        Circle circle = new Circle(((processorPane.getWidth()-70)*-1), ((treePane.getHeight()/4)+20), 15);
-        processorPane.getChildren().add(circle);
+    public void moveProcessToProcessor(TreeNode process){
+        double x = ((processorPane.getWidth()-70)*-1);
+        double y = ((treePane.getHeight()/4)+20);
+
+        Circle circle = new Circle(x, y, 15);
+        if(process.isRed())
+            circle.setFill(Color.INDIANRED);
+        else circle.setFill(Color.GRAY);
+        Text text = new Text(x - 4, y + 4, process.element + "");
+
+
+        processorPane.getChildren().addAll(circle,text);
         Duration time = Duration.millis(1000);
-        TranslateTransition tr = new TranslateTransition(time,circle);
-        tr.setToX(755);
-        tr.play();
+
+        //circle transition
+        TranslateTransition circleTransition = new TranslateTransition(time,circle);
+        circleTransition.setToX(755);
+        circleTransition.play();
+
+        //text transition
+        TranslateTransition textTransition = new TranslateTransition(time,text);
+        textTransition.setToX(755);
+        textTransition.play();
+
+
+        //listener for animation when finished
+        textTransition.setOnFinished(e->{
+            System.out.println("Finished");
+
+            int size = processorPane.getChildren().size();
+            processorPane.getChildren().remove(size-1);
+            processorPane.getChildren().remove(size-2);
+
+        });
+    }
+
+    //function to remove node from tree
+    public void fetchProcess(){
+
     }
 
     public void addFunctionalities(TextField textField, Button insert, Button delete, RedBlackTree<Integer> tree, TreeUtil view){
@@ -101,7 +137,7 @@ public class MainController implements Initializable {
             else {
                 int key = Integer.parseInt(textField.getText());
 
-                if (tree.search(key)) {
+                if (tree.search(key)!=null) {
                     view.displayTree();
                     view.setStatus(key + " is already present!");
                 } else {
@@ -120,7 +156,10 @@ public class MainController implements Initializable {
         delete.setOnAction(e->{
             
             int key = Integer.parseInt(textField.getText());
-            if(!tree.search(key)){
+
+            TreeNode node = tree.search(key);
+
+            if(node==null){
                 view.displayTree();
                 view.setStatus(key +" is not present!");
             }
@@ -130,7 +169,10 @@ public class MainController implements Initializable {
                 view.setStatus(key+" is replaced by its predecessor and is deleted!");
 
                 nodes.remove(Integer.valueOf(key));
-                System.out.println(nodes.toString());
+
+                moveProcessToProcessor(node);
+
+
             }
             textField.clear();
         });

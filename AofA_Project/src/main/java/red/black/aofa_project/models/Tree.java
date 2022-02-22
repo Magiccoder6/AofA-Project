@@ -7,7 +7,7 @@ import red.black.aofa_project.Author;
 public interface Tree<E> extends Iterable<E> {
     public boolean insert(E e);
     public boolean delete(E e);
-    public boolean search(E e);
+    public TreeNode search(E e);
     public void inorder();
     public void postorder();
     public void preorder();

@@ -136,6 +136,7 @@ public class RedBlackTree<E extends Comparable<E>> extends BST<E> {
         }
         else
             path = path(e);
+
         deleteLastNodeInPath(path);
 
         size--;

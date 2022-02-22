@@ -23,11 +23,11 @@ public class BST<E extends Comparable<E>> implements Tree<E> {
             insert(o);
     }
 
-    private boolean search(TreeNode<E> root, E e){
+    private TreeNode<E> search(TreeNode<E> root, E e){
         if(root == null)
-            return false;
+            return null;
         else if(e.compareTo(root.element) == 0)
-            return true;
+            return root;
         else{
             if(e.compareTo(root.element) > 0)
                 return search(root.right, e);
@@ -43,7 +43,7 @@ public class BST<E extends Comparable<E>> implements Tree<E> {
     }
 
     @Override
-    public boolean search(E e) {
+    public TreeNode<E> search(E e) {
         return search(root, e);
     }
 
@@ -182,6 +182,7 @@ public class BST<E extends Comparable<E>> implements Tree<E> {
         size--;
         return true;
     }
+
 
     @Override
     public Iterator<E> iterator() {
