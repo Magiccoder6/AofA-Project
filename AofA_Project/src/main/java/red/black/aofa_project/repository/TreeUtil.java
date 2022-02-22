@@ -36,9 +36,15 @@ public class TreeUtil extends Pane {
         if(tree.getRoot() != null){
             displayTree(tree.getRoot(), getWidth() / 2, vGap, getWidth() / 4);
         }
+
     }
 
     private void displayTree(TreeNode<Integer> root, double x, double y, double hGap){
+        System.out.println("Circle Location: "+x);
+        System.out.println("Container: "+getWidth());
+
+
+
         if(root.left != null){
             getChildren().add(new Line(x - hGap, y + vGap, x, y));
             displayTree(root.left, x - hGap, y + vGap, hGap / 2);
@@ -57,5 +63,6 @@ public class TreeUtil extends Pane {
             circle.setFill(Color.INDIANRED);
         else circle.setFill(Color.GRAY);
         getChildren().addAll(circle, new Text(x - 4, y + 4, root.element + ""));
+
     }
 }
