@@ -4,14 +4,12 @@ import javafx.animation.TranslateTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
-import javafx.scene.Group;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
@@ -41,9 +39,9 @@ public class MainController implements Initializable {
     private ImageView stop;
 
     private BorderPane treePane;
-    private static ArrayList<Integer> nodes = new ArrayList<>();
-
-
+    private CompletlyFairScheduler scheduler;
+    private RedBlackTree<Integer> tree;
+    private TreeUtil view;
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
@@ -53,11 +51,11 @@ public class MainController implements Initializable {
     }
 
     public void setupTreeViewer(){
-        RedBlackTree<Integer> tree = new RedBlackTree<>();
+        tree = new RedBlackTree<>();
         treePane = new BorderPane();
         treePane.setPrefWidth(TreeContainer.getPrefWidth());
         treePane.setPrefHeight(TreeContainer.getPrefHeight());
-        TreeUtil view = new TreeUtil(tree);
+        view = new TreeUtil(tree);
         setPane(treePane, view, tree);
 
         TreeContainer.setContent(treePane);
@@ -69,7 +67,7 @@ public class MainController implements Initializable {
         textField.setPrefColumnCount(3);
         textField.setAlignment(Pos.BASELINE_RIGHT);
         Button insert = new Button("Insert");
-        Button delete = new Button("Delete");
+        Button delete = new Button("Delete Tree");
         addFunctionalities(textField, insert, delete, tree, view);
         HBox hBox = new HBox(5);
         hBox.getChildren().addAll(new Label("Enter process burst time: "), textField, insert, delete);
@@ -113,7 +111,6 @@ public class MainController implements Initializable {
 
         //listener for animation when finished
         textTransition.setOnFinished(e->{
-            System.out.println("Finished");
 
             int size = processorPane.getChildren().size();
             processorPane.getChildren().remove(size-1);
@@ -122,10 +119,7 @@ public class MainController implements Initializable {
         });
     }
 
-    //function to remove node from tree
-    public void fetchProcess(){
 
-    }
 
     public void addFunctionalities(TextField textField, Button insert, Button delete, RedBlackTree<Integer> tree, TreeUtil view){
         insert.setOnAction(e->{
@@ -144,37 +138,58 @@ public class MainController implements Initializable {
                     tree.insert(key);
                     view.displayTree();
                     view.setStatus(key + " is inserted!");
-                    nodes.add(key);
+
+                    //////////////////////////////stoped here//////////////////////////////////
+                    System.out.println(tree.findMin(tree.root).getPID());
+                    CompletlyFairScheduler completlyFairScheduler = new CompletlyFairScheduler();
+                    completlyFairScheduler.start();
 
                 }
+
                 textField.clear();
 
-                System.out.println(nodes.toString());
             }
         });
 
         delete.setOnAction(e->{
-            
-            int key = Integer.parseInt(textField.getText());
+            tree.root=null;
+            view.clearTree();
 
-            TreeNode node = tree.search(key);
+            //moveProcessToProcessor(node);
 
-            if(node==null){
-                view.displayTree();
-                view.setStatus(key +" is not present!");
-            }
-            else{
-                tree.delete(key);
-                view.displayTree();
-                view.setStatus(key+" is replaced by its predecessor and is deleted!");
-
-                nodes.remove(Integer.valueOf(key));
-
-                moveProcessToProcessor(node);
-
-
-            }
             textField.clear();
         });
+    }
+
+    //function to remove node from tree
+    public void deleteProcess(int key){
+        TreeNode node = tree.search(key);
+
+        if(node==null){
+            view.displayTree();
+            view.setStatus(key +" is not present!");
+        }
+        else {
+            tree.delete(key);
+            view.displayTree();
+            view.setStatus(key + " is replaced by its predecessor and is deleted!");
+        }
+    }
+
+
+    public class CompletlyFairScheduler extends Thread{
+        public int TreeSize;
+
+        public CompletlyFairScheduler(){
+            TreeSize=tree.getSize();
+        }
+
+        @Override
+        public void run() {
+            super.run();
+            System.out.println(TreeSize);
+        }
+
+
     }
 }

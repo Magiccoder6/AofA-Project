@@ -31,6 +31,7 @@ public class RedBlackTree<E extends Comparable<E>> extends BST<E> {
         return true;
     }
 
+
     private void ensureRBTree(E e) {
         ArrayList<TreeNode<E>> path = path(e);
         int i = path.size() - 1;
@@ -283,3 +284,4 @@ public class RedBlackTree<E extends Comparable<E>> extends BST<E> {
 
     }
 }
+

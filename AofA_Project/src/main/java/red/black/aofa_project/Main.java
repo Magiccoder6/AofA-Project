@@ -24,7 +24,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws IOException {
         Rectangle2D screenBounds = Screen.getPrimary().getBounds();
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("View.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(),screenBounds.getWidth()-(screenBounds.getWidth()/4), screenBounds.getHeight()-(screenBounds.getHeight()/5));
+        Scene scene = new Scene(fxmlLoader.load(),screenBounds.getWidth(), screenBounds.getHeight()-(screenBounds.getHeight()/5));
         primaryStage.setTitle("Red Black Tree");
         primaryStage.setScene(scene);
         primaryStage.show();

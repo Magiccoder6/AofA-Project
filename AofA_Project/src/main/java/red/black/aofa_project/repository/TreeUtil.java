@@ -39,6 +39,10 @@ public class TreeUtil extends Pane {
 
     }
 
+    public void clearTree(){
+        this.getChildren().clear();
+    }
+
     private void displayTree(TreeNode<Integer> root, double x, double y, double hGap){
         System.out.println("Circle Location: "+x);
         System.out.println("Container: "+getWidth());

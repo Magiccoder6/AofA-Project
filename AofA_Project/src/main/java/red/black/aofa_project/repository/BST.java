@@ -174,6 +174,14 @@ public class BST<E extends Comparable<E>> implements Tree<E> {
         return temp.element;
     }
 
+    //shemar modification
+    public TreeNode<E> findMin(TreeNode<E> root){
+        TreeNode<E> temp = root;
+        while(temp.left != null)
+            temp = temp.left;
+        return temp;
+    }
+
     @Override
     public boolean delete(E e) {
         root = delete(root, e);
