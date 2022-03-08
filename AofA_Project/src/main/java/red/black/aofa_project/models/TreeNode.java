@@ -15,6 +15,7 @@ public class TreeNode<E extends Comparable<E>> {
     private String PID;
     private int RunTime=0;
 
+
     public TreeNode(E e){
         element = e;
         PID= UUID.randomUUID().toString();

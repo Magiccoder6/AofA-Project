@@ -31,6 +31,14 @@ public class RedBlackTree<E extends Comparable<E>> extends BST<E> {
         return true;
     }
 
+    //shemar modification to reinsert node back in red black tree
+    @Override
+    public TreeNode<E> reInsert(TreeNode<E> root, TreeNode<E> process) {
+        TreeNode<E> node = super.reInsert(root, process);
+        ensureRBTree(node.element);
+
+        return node;
+    }
 
     private void ensureRBTree(E e) {
         ArrayList<TreeNode<E>> path = path(e);

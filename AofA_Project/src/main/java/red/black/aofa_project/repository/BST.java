@@ -62,6 +62,18 @@ public class BST<E extends Comparable<E>> implements Tree<E> {
 
     }
 
+    //shemar modification to re add a process to a tree
+    public TreeNode<E> reInsert(TreeNode<E> root, TreeNode<E> process){
+        if(process.element.compareTo(root.element) > 0)
+            root.right = insert(root.right, process.element);
+        else if(process.element.compareTo(root.element) < 0)
+            root.left = insert(root.left, process.element);
+        else
+            return null;
+
+        return root;
+    }
+
     @Override
     public boolean insert(E e) {
         root = insert(root,e);
@@ -177,6 +189,8 @@ public class BST<E extends Comparable<E>> implements Tree<E> {
     //shemar modification
     public TreeNode<E> findMin(TreeNode<E> root){
         TreeNode<E> temp = root;
+        if(temp==null)
+            return null;
         while(temp.left != null)
             temp = temp.left;
         return temp;

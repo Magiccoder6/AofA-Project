@@ -1,6 +1,7 @@
 package red.black.aofa_project.controllers;
 
 import javafx.animation.TranslateTransition;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
@@ -42,6 +43,10 @@ public class MainController implements Initializable {
     private CompletlyFairScheduler scheduler;
     private RedBlackTree<Integer> tree;
     private TreeUtil view;
+    private TextField processInput;
+    private Button insertProcessButton;
+    private Button deleteTree;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 
@@ -63,27 +68,19 @@ public class MainController implements Initializable {
 
     public void setPane(BorderPane pane, TreeUtil view, RedBlackTree<Integer> tree){
         pane.setCenter(view);
-        TextField textField = new TextField();
-        textField.setPrefColumnCount(3);
-        textField.setAlignment(Pos.BASELINE_RIGHT);
-        Button insert = new Button("Insert");
-        Button delete = new Button("Delete Tree");
-        addFunctionalities(textField, insert, delete, tree, view);
+        processInput = new TextField();
+        processInput.setPrefColumnCount(3);
+        processInput.setAlignment(Pos.BASELINE_RIGHT);
+        insertProcessButton = new Button("Insert");
+        deleteTree = new Button("Delete Tree");
+        addFunctionalities(tree, view);
         HBox hBox = new HBox(5);
-        hBox.getChildren().addAll(new Label("Enter process burst time: "), textField, insert, delete);
+        hBox.getChildren().addAll(new Label("Enter process burst time: "), processInput, insertProcessButton, deleteTree);
         hBox.setAlignment(Pos.TOP_CENTER);
         pane.setTop(hBox);
     }
 
-    public void addSchedulerControllers(){
-        play.setOnMouseClicked(e->{
-
-
-
-
-        });
-    }
-
+    //animation to move node to processor
     public void moveProcessToProcessor(TreeNode process){
         double x = ((processorPane.getWidth()-70)*-1);
         double y = ((treePane.getHeight()/4)+20);
@@ -112,57 +109,52 @@ public class MainController implements Initializable {
         //listener for animation when finished
         textTransition.setOnFinished(e->{
 
-            int size = processorPane.getChildren().size();
-            processorPane.getChildren().remove(size-1);
-            processorPane.getChildren().remove(size-2);
+            //int size = processorPane.getChildren().size();
+            //processorPane.getChildren().remove(size-1);
+            //processorPane.getChildren().remove(size-2);
 
         });
     }
 
-
-
-    public void addFunctionalities(TextField textField, Button insert, Button delete, RedBlackTree<Integer> tree, TreeUtil view){
-        insert.setOnAction(e->{
-            if(textField.getText().length() == 0) {
+    //
+    public void addFunctionalities(RedBlackTree<Integer> tree, TreeUtil view){
+        insertProcessButton.setOnAction(e->{
+            if(processInput.getText().length() == 0) {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION, "You haven't entered anything!", ButtonType.OK);
                 alert.getDialogPane().setMinHeight(80);
                 alert.show();
             }
             else {
-                int key = Integer.parseInt(textField.getText());
-
-                if (tree.search(key)!=null) {
-                    view.displayTree();
-                    view.setStatus(key + " is already present!");
-                } else {
-                    tree.insert(key);
-                    view.displayTree();
-                    view.setStatus(key + " is inserted!");
-
-                    //////////////////////////////stoped here//////////////////////////////////
-                    System.out.println(tree.findMin(tree.root).getPID());
-                    CompletlyFairScheduler completlyFairScheduler = new CompletlyFairScheduler();
-                    completlyFairScheduler.start();
-
-                }
-
-                textField.clear();
-
+                int key = Integer.parseInt(processInput.getText());
+                insertProcess(key);
             }
         });
 
-        delete.setOnAction(e->{
+        //clear tree nodes
+        deleteTree.setOnAction(e->{
             tree.root=null;
             view.clearTree();
-
-            //moveProcessToProcessor(node);
-
-            textField.clear();
+            processInput.clear();
         });
     }
 
+    //insert a process into the tree
+    public void insertProcess(int key){
+        if (tree.search(key)!=null) {
+            view.displayTree();
+            view.setStatus(key + " is already present!");
+        } else {
+            tree.insert(key);
+            view.displayTree();
+            view.setStatus(key + " is inserted!");
+
+        }
+
+        processInput.clear();
+
+    }
     //function to remove node from tree
-    public void deleteProcess(int key){
+    public void fetchProcess(Integer key){
         TreeNode node = tree.search(key);
 
         if(node==null){
@@ -176,20 +168,103 @@ public class MainController implements Initializable {
         }
     }
 
+    public void addSchedulerControllers(){
+        pause.setDisable(true);
+        stop.setDisable(true);
+
+        play.setOnMouseClicked(e->{
+            scheduler = new CompletlyFairScheduler();
+            scheduler.start();
+            play.setDisable(true);
+            pause.setDisable(false);
+            stop.setDisable(false);
+        });
+
+        pause.setOnMouseClicked(e->{
+            scheduler.setPause(true);
+            scheduler.setStop(true);
+            pause.setDisable(true);
+            stop.setDisable(true);
+            play.setDisable(false);
+
+        });
+
+        stop.setOnMouseClicked(e->{
+            scheduler.setStop(true);
+            scheduler.setPause(true);
+            stop.setDisable(true);
+            pause.setDisable(true);
+            play.setDisable(false);
+        });
+
+
+    }
 
     public class CompletlyFairScheduler extends Thread{
         public int TreeSize;
+        private boolean pause;
+        private boolean stop;
 
         public CompletlyFairScheduler(){
             TreeSize=tree.getSize();
+            pause=false;
+            stop=false;
         }
 
         @Override
         public void run() {
-            super.run();
-            System.out.println(TreeSize);
+
+            while(!pause || !stop){
+                TreeNode process = tree.findMin(tree.getRoot());
+                Integer processBurstTime=(Integer) process.element;
+
+                super.run();
+                try {
+
+                    if(process != null){
+
+                        //move process from tree to cpu
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                fetchProcess(processBurstTime);
+                                moveProcessToProcessor(process);
+
+                            }
+                        });
+                        Thread.sleep(2000);
+
+                        //add back process to tree
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                process.element= ((Integer) process.element)+((Integer) process.element);
+                                tree.reInsert(tree.getRoot(),process);
+                                view.displayTree();
+                            }
+                        });
+                        Thread.sleep(2000);
+
+                    }else{
+                        pause=true;
+                        stop=true;
+                    }
+
+
+
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
         }
 
+        public void setPause(boolean pause) {
+            this.pause = pause;
+        }
 
+        public void setStop(boolean stop) {
+            this.stop = stop;
+        }
     }
 }
