@@ -8,19 +8,24 @@ import red.black.aofa_project.models.TreeNode;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
 
 @Author(name = "Ankit Sharma", date = "12 Oct 2018",URL = "https://github.com/beingmartinbmc/LearnTrees/blob/master/src/trees/gui/redBlack")
 public class BST<E extends Comparable<E>> implements Tree<E> {
 
     public TreeNode<E> root;
-    public int size = 0;
+    public int size = 1;
 
     public BST() {
     }
 
-    public BST(E[] objects) {
+    public BST(E[] objects,int RunTime) {
         for (E o: objects)
-            insert(o);
+            insert(o,RunTime);
+    }
+
+    public BST(E[] elements) {
     }
 
     private TreeNode<E> search(TreeNode<E> root, E e){
@@ -47,14 +52,14 @@ public class BST<E extends Comparable<E>> implements Tree<E> {
         return search(root, e);
     }
 
-    public TreeNode<E> insert(TreeNode<E> root, E e){
+    public TreeNode<E> insert(TreeNode<E> root, E e,int RunTime){
         if(root == null)
-            root = createNewNode(e);
+            root = createNewNode(e,RunTime);
         else{
             if(e.compareTo(root.element) > 0)
-                root.right = insert(root.right, e);
+                root.right = insert(root.right, e,RunTime);
             else if(e.compareTo(root.element) < 0)
-                root.left = insert(root.left, e);
+                root.left = insert(root.left, e,RunTime);
             else
                 return null;
         }
@@ -62,30 +67,20 @@ public class BST<E extends Comparable<E>> implements Tree<E> {
 
     }
 
-    //shemar modification to re add a process to a tree
-    public TreeNode<E> reInsert(TreeNode<E> root, TreeNode<E> process){
-        if(process.element.compareTo(root.element) > 0)
-            root.right = insert(root.right, process.element);
-        else if(process.element.compareTo(root.element) < 0)
-            root.left = insert(root.left, process.element);
-        else
-            return null;
-
-        return root;
-    }
 
     @Override
-    public boolean insert(E e) {
-        root = insert(root,e);
+    public boolean insert(E e,int RunTime) {
+        root = insert(root,e,RunTime);
         if(root == null)
             return false;
         size++;
         return true;
     }
 
-    public TreeNode<E> createNewNode(E e){
-        return new TreeNode<>(e);
+    public TreeNode<E> createNewNode(E e,int RunTime){
+        return new TreeNode<>(e,RunTime);
     }
+
 
     @Override
     public void inorder() {
@@ -197,14 +192,13 @@ public class BST<E extends Comparable<E>> implements Tree<E> {
     }
 
     @Override
-    public boolean delete(E e) {
+    public TreeNode delete(E e) {
         root = delete(root, e);
         if(root == null)
-            return false;
+            return null;
         size--;
-        return true;
+        return root;
     }
-
 
     @Override
     public Iterator<E> iterator() {

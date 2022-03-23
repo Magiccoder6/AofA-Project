@@ -34,7 +34,10 @@ public class TreeUtil extends Pane {
     public void displayTree(){
         this.getChildren().clear();
         if(tree.getRoot() != null){
+
             displayTree(tree.getRoot(), getWidth() / 2, vGap, getWidth() / 4);
+        }else{
+            System.out.println("null");
         }
 
     }
@@ -44,8 +47,8 @@ public class TreeUtil extends Pane {
     }
 
     private void displayTree(TreeNode<Integer> root, double x, double y, double hGap){
-        System.out.println("Circle Location: "+x);
-        System.out.println("Container: "+getWidth());
+        //System.out.println("Circle Location: "+x);
+       // System.out.println("Container: "+getWidth());
 
 
 

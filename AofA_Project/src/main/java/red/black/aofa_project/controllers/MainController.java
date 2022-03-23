@@ -17,7 +17,8 @@ import javafx.util.Duration;
 import red.black.aofa_project.models.TreeNode;
 import red.black.aofa_project.repository.*;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.ResourceBundle;
 
 
@@ -39,6 +40,12 @@ public class MainController implements Initializable {
     @FXML
     private ImageView stop;
 
+    @FXML
+    private Label vruntime;
+
+    @FXML
+    private Circle indicator;
+
     private BorderPane treePane;
     private CompletlyFairScheduler scheduler;
     private RedBlackTree<Integer> tree;
@@ -47,11 +54,14 @@ public class MainController implements Initializable {
     private Button insertProcessButton;
     private Button deleteTree;
 
+    private TranslateTransition circleTransition;
+    private TranslateTransition textTransition;
+
+    private Queue<TreeNode> WaitQueue = new PriorityQueue<>();//store processes that has the same burst time of a process in the tree
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-
         setupTreeViewer();
-
         addSchedulerControllers();
     }
 
@@ -96,24 +106,18 @@ public class MainController implements Initializable {
         Duration time = Duration.millis(1000);
 
         //circle transition
-        TranslateTransition circleTransition = new TranslateTransition(time,circle);
+        circleTransition = new TranslateTransition(time,circle);
         circleTransition.setToX(755);
         circleTransition.play();
 
         //text transition
-        TranslateTransition textTransition = new TranslateTransition(time,text);
+        textTransition = new TranslateTransition(time,text);
         textTransition.setToX(755);
         textTransition.play();
 
 
-        //listener for animation when finished
-        textTransition.setOnFinished(e->{
 
-            //int size = processorPane.getChildren().size();
-            //processorPane.getChildren().remove(size-1);
-            //processorPane.getChildren().remove(size-2);
 
-        });
     }
 
     //
@@ -133,8 +137,10 @@ public class MainController implements Initializable {
         //clear tree nodes
         deleteTree.setOnAction(e->{
             tree.root=null;
+            tree.size=0;
             view.clearTree();
             processInput.clear();
+            vruntime.setText("");//reset vruntime
         });
     }
 
@@ -144,7 +150,7 @@ public class MainController implements Initializable {
             view.displayTree();
             view.setStatus(key + " is already present!");
         } else {
-            tree.insert(key);
+            tree.insert(key,key);
             view.displayTree();
             view.setStatus(key + " is inserted!");
 
@@ -160,24 +166,32 @@ public class MainController implements Initializable {
         if(node==null){
             view.displayTree();
             view.setStatus(key +" is not present!");
+
         }
         else {
-            tree.delete(key);
+
             view.displayTree();
             view.setStatus(key + " is replaced by its predecessor and is deleted!");
+
+
         }
     }
+
+
 
     public void addSchedulerControllers(){
         pause.setDisable(true);
         stop.setDisable(true);
 
         play.setOnMouseClicked(e->{
-            scheduler = new CompletlyFairScheduler();
-            scheduler.start();
-            play.setDisable(true);
-            pause.setDisable(false);
-            stop.setDisable(false);
+            if(tree.size>0){
+                scheduler = new CompletlyFairScheduler();
+                scheduler.start();
+                play.setDisable(true);
+                pause.setDisable(false);
+                stop.setDisable(false);
+            }
+
         });
 
         pause.setOnMouseClicked(e->{
@@ -201,53 +215,125 @@ public class MainController implements Initializable {
     }
 
     public class CompletlyFairScheduler extends Thread{
-        public int TreeSize;
+        public int StartingTreeSize;
+        public int CurrentTreeSize;
+        private int VRUNTIME;
         private boolean pause;
         private boolean stop;
+        private TreeNode process;
 
         public CompletlyFairScheduler(){
-            TreeSize=tree.getSize();
+            CurrentTreeSize =tree.size;
+            StartingTreeSize =tree.size;
+            VRUNTIME= 1;
             pause=false;
             stop=false;
         }
 
         @Override
         public void run() {
+            super.run();
 
             while(!pause || !stop){
-                TreeNode process = tree.findMin(tree.getRoot());
-                Integer processBurstTime=(Integer) process.element;
-
-                super.run();
                 try {
 
+                if(WaitQueue.size()>0){ //check if the recent processes with conflicted burst times are still waiting
+                    process=WaitQueue.poll();
+
+                    if(tree.search((Integer)process.element)==null){//check if burst time is in the tree
+                        tree.insert((Integer)process.element,process.RunTime);
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                view.displayTree();
+                            }
+                        });
+                        Thread.sleep(1000);
+                    }else{
+                        WaitQueue.add(process);//add process back to queue
+                        TreeNode min = tree.findMin(tree.getRoot());//find the process with the smallest burst time
+                        process = tree.delete((Integer)min.element);//fetch node from tree
+                    }
+
+                }
+                else{
+                    TreeNode min = tree.findMin(tree.getRoot());//find the process with the smallest burst time
+                    process = tree.delete((Integer)min.element);//fetch node from tree
+                }
+
                     if(process != null){
+
+                        VRUNTIME=StartingTreeSize/tree.size;//set runtime for each process
 
                         //move process from tree to cpu
                         Platform.runLater(new Runnable() {
                             @Override
                             public void run() {
-                                fetchProcess(processBurstTime);
+
+                                vruntime.setText(Integer.toString(VRUNTIME)+" MS");//set virtual runtime in gui
+                                view.displayTree();
                                 moveProcessToProcessor(process);
 
                             }
                         });
                         Thread.sleep(2000);
 
-                        //add back process to tree
+                        //add back the process to tree
                         Platform.runLater(new Runnable() {
                             @Override
                             public void run() {
-                                process.element= ((Integer) process.element)+((Integer) process.element);
-                                tree.reInsert(tree.getRoot(),process);
+                                process.element= ((Integer) process.element)+VRUNTIME;
+
+                                //if process burst time is not in the tree then add it
+                                if (tree.search((Integer)process.element)==null){
+                                   tree.insert((Integer)process.element,process.RunTime);
+
+                                }else{
+                                    WaitQueue.add(process);
+                                }
+
+                                System.out.println("RunTime "+process.RunTime);
+                                System.out.println("Element "+process.element);
+
+                            }
+                        });
+                        Thread.sleep(4000);
+                        //add process to tree end
+
+
+                        circleTransition.getNode().setVisible(false);
+                        textTransition.getNode().setVisible(false);
+
+                        ///display updated tree
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
                                 view.displayTree();
                             }
                         });
-                        Thread.sleep(2000);
+                        Thread.sleep(1000);
+                        //display updated tree end
 
                     }else{
                         pause=true;
                         stop=true;
+
+
+                        //reset gui controller buttons
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                MainController.this.stop.setDisable(true);
+                                MainController.this.pause.setDisable(true);
+                                MainController.this.play.setDisable(false);
+
+                                //reset tree container section
+                                tree.root=null;
+                                tree.size=0;
+                                processInput.clear();
+                                vruntime.setText("");//reset vruntime
+                            }
+                        });
                     }
 
 

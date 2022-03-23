@@ -1,6 +1,7 @@
 package red.black.aofa_project.repository;
 
 
+import red.black.aofa_project.models.Tree;
 import red.black.aofa_project.models.TreeNode;
 
 import java.util.ArrayList;
@@ -15,13 +16,13 @@ public class RedBlackTree<E extends Comparable<E>> extends BST<E> {
     }
 
     @Override
-    public TreeNode<E> createNewNode(E e) {
-        return new TreeNode<>(e);
+    public TreeNode<E> createNewNode(E e,int Runtime) {
+        return new TreeNode<>(e,Runtime);
     }
 
     @Override
-    public boolean insert(E e) {
-        boolean successful = super.insert(e);
+    public boolean insert(E e,int RunTime) {
+        boolean successful = super.insert(e,RunTime);
         if (!successful)
             return false;
         else {
@@ -29,15 +30,6 @@ public class RedBlackTree<E extends Comparable<E>> extends BST<E> {
         }
 
         return true;
-    }
-
-    //shemar modification to reinsert node back in red black tree
-    @Override
-    public TreeNode<E> reInsert(TreeNode<E> root, TreeNode<E> process) {
-        TreeNode<E> node = super.reInsert(root, process);
-        ensureRBTree(node.element);
-
-        return node;
     }
 
     private void ensureRBTree(E e) {
@@ -118,7 +110,7 @@ public class RedBlackTree<E extends Comparable<E>> extends BST<E> {
     }
 
     @Override
-    public boolean delete(E e) {
+    public TreeNode delete(E e) {
         TreeNode<E> current = root;
         while (current != null) {
             if (e.compareTo(current.element) < 0) {
@@ -132,7 +124,7 @@ public class RedBlackTree<E extends Comparable<E>> extends BST<E> {
         }
 
         if (current == null)
-            return false;
+            return null;
 
         ArrayList<TreeNode<E>> path;
         if (current.left != null && current.right != null) {
@@ -149,7 +141,7 @@ public class RedBlackTree<E extends Comparable<E>> extends BST<E> {
         deleteLastNodeInPath(path);
 
         size--;
-        return true;
+        return current;
     }
 
     public void deleteLastNodeInPath(ArrayList<TreeNode<E>> path) {
