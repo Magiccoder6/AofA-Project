@@ -216,14 +216,12 @@ public class MainController implements Initializable {
 
     public class CompletlyFairScheduler extends Thread{
         public int StartingTreeSize;
-        public int CurrentTreeSize;
         private int VRUNTIME;
         private boolean pause;
         private boolean stop;
         private TreeNode process;
 
         public CompletlyFairScheduler(){
-            CurrentTreeSize =tree.size;
             StartingTreeSize =tree.size;
             VRUNTIME= 1;
             pause=false;
@@ -237,33 +235,42 @@ public class MainController implements Initializable {
             while(!pause || !stop){
                 try {
 
-                if(WaitQueue.size()>0){ //check if the recent processes with conflicted burst times are still waiting
-                    process=WaitQueue.poll();
+                    if(WaitQueue.size()>0){ //check if the recent processes with conflicted burst times are still waiting
+                        process=WaitQueue.poll();
 
-                    if(tree.search((Integer)process.element)==null){//check if burst time is in the tree
-                        tree.insert((Integer)process.element,process.RunTime);
-                        Platform.runLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                view.displayTree();
-                            }
-                        });
-                        Thread.sleep(1000);
-                    }else{
-                        WaitQueue.add(process);//add process back to queue
+                        if(tree.search((Integer)process.element)==null){//check if burst time is in the tree
+                            tree.insert((Integer)process.element,process.RunTime);
+                            Platform.runLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    view.displayTree();
+                                }
+                            });
+                            Thread.sleep(1000);
+
+                            setVRuntime();
+                            TreeNode min = tree.findMin(tree.getRoot());//find the process with the smallest burst time
+                            process = tree.delete((Integer)min.element);//fetch node from tree
+                        }else{
+                            setVRuntime();
+                            WaitQueue.add(process);//add process back to queue
+                            TreeNode min = tree.findMin(tree.getRoot());//find the process with the smallest burst time
+                            process = tree.delete((Integer)min.element);//fetch node from tree
+                        }
+
+                    }
+                    else{
+                        setVRuntime();
                         TreeNode min = tree.findMin(tree.getRoot());//find the process with the smallest burst time
-                        process = tree.delete((Integer)min.element);//fetch node from tree
+                        if(min != null)
+                            process = tree.delete((Integer)min.element);//fetch node from tree
+                        else
+                            process=null;
+
                     }
 
-                }
-                else{
-                    TreeNode min = tree.findMin(tree.getRoot());//find the process with the smallest burst time
-                    process = tree.delete((Integer)min.element);//fetch node from tree
-                }
 
                     if(process != null){
-
-                        VRUNTIME=StartingTreeSize/tree.size;//set runtime for each process
 
                         //move process from tree to cpu
                         Platform.runLater(new Runnable() {
@@ -286,20 +293,29 @@ public class MainController implements Initializable {
 
                                 //if process burst time is not in the tree then add it
                                 if (tree.search((Integer)process.element)==null){
-                                   tree.insert((Integer)process.element,process.RunTime);
+                                    if(((Integer)process.element / process.RunTime)<2)//check if process time is finished
+                                        tree.insert((Integer)process.element,process.RunTime);
+                                    /*else{
+                                        System.out.println("Process Finished: ");
+                                        System.out.println("Target RunTime "+process.RunTime);
+                                        System.out.println("Actual RunTime "+process.element);
+                                    }*/
 
                                 }else{
-                                    WaitQueue.add(process);
-                                }
+                                    if(((Integer)process.element / process.RunTime)<2){//check if the process is finished
+                                        WaitQueue.add(process);
+                                    } /*else{
+                                        System.out.println("Process Finished: ");
+                                        System.out.println("Target RunTime "+process.RunTime);
+                                        System.out.println("Actual RunTime "+process.element);
+                                    }*/
 
-                                System.out.println("RunTime "+process.RunTime);
-                                System.out.println("Element "+process.element);
+                                }
 
                             }
                         });
                         Thread.sleep(4000);
                         //add process to tree end
-
 
                         circleTransition.getNode().setVisible(false);
                         textTransition.getNode().setVisible(false);
@@ -336,8 +352,6 @@ public class MainController implements Initializable {
                         });
                     }
 
-
-
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -345,6 +359,10 @@ public class MainController implements Initializable {
 
         }
 
+        public void setVRuntime(){
+            if(tree.size>0)
+                VRUNTIME=StartingTreeSize/tree.size;//set runtime for each process
+        }
         public void setPause(boolean pause) {
             this.pause = pause;
         }

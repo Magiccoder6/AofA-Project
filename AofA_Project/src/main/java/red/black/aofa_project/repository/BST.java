@@ -15,7 +15,7 @@ import java.util.Queue;
 public class BST<E extends Comparable<E>> implements Tree<E> {
 
     public TreeNode<E> root;
-    public int size = 1;
+    public int size = 0;
 
     public BST() {
     }

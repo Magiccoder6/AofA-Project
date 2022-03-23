@@ -36,10 +36,7 @@ public class TreeUtil extends Pane {
         if(tree.getRoot() != null){
 
             displayTree(tree.getRoot(), getWidth() / 2, vGap, getWidth() / 4);
-        }else{
-            System.out.println("null");
         }
-
     }
 
     public void clearTree(){
