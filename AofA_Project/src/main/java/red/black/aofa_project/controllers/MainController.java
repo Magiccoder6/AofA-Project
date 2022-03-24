@@ -6,6 +6,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.effect.BlendMode;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -17,6 +18,7 @@ import javafx.util.Duration;
 import red.black.aofa_project.models.TreeNode;
 import red.black.aofa_project.repository.*;
 import java.net.URL;
+import java.util.InputMismatchException;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.ResourceBundle;
@@ -44,7 +46,23 @@ public class MainController implements Initializable {
     private Label vruntime;
 
     @FXML
+    private ImageView processor;
+
+    @FXML
     private Circle indicator;
+
+    @FXML
+    private ImageView bus1;
+
+    @FXML
+    private ImageView bus2;
+
+    @FXML
+    private ImageView bus3;
+
+    @FXML
+    private ImageView bus4;
+
 
     private BorderPane treePane;
     private CompletlyFairScheduler scheduler;
@@ -93,7 +111,7 @@ public class MainController implements Initializable {
     //animation to move node to processor
     public void moveProcessToProcessor(TreeNode process){
         double x = ((processorPane.getWidth()-70)*-1);
-        double y = ((treePane.getHeight()/4)+20);
+        double y = ((treePane.getHeight()/4)+100);
 
         Circle circle = new Circle(x, y, 15);
         if(process.isRed())
@@ -129,8 +147,20 @@ public class MainController implements Initializable {
                 alert.show();
             }
             else {
-                int key = Integer.parseInt(processInput.getText());
-                insertProcess(key);
+                try{
+                    int key = Integer.parseInt(processInput.getText());
+                    if(key>0)
+                        insertProcess(key);
+                    else{
+                        Alert alert = new Alert(Alert.AlertType.INFORMATION, "Please Enter An Integer Value greater than 0.", ButtonType.OK);
+                        alert.show();
+                    }
+                }catch (NumberFormatException exception){
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION, "Please Enter An Integer Value", ButtonType.OK);
+                    alert.show();
+                }
+
+
             }
         });
 
@@ -187,6 +217,7 @@ public class MainController implements Initializable {
             if(tree.size>0){
                 scheduler = new CompletlyFairScheduler();
                 scheduler.start();
+
                 play.setDisable(true);
                 pause.setDisable(false);
                 stop.setDisable(false);
@@ -197,6 +228,8 @@ public class MainController implements Initializable {
         pause.setOnMouseClicked(e->{
             scheduler.setPause(true);
             scheduler.setStop(true);
+            scheduler.animation.start=false;
+
             pause.setDisable(true);
             stop.setDisable(true);
             play.setDisable(false);
@@ -206,6 +239,8 @@ public class MainController implements Initializable {
         stop.setOnMouseClicked(e->{
             scheduler.setStop(true);
             scheduler.setPause(true);
+            scheduler.animation.start=false;
+
             stop.setDisable(true);
             pause.setDisable(true);
             play.setDisable(false);
@@ -214,24 +249,28 @@ public class MainController implements Initializable {
 
     }
 
+
     public class CompletlyFairScheduler extends Thread{
         public int StartingTreeSize;
         private int VRUNTIME;
         private boolean pause;
         private boolean stop;
         private TreeNode process;
+        private Animation animation;
 
         public CompletlyFairScheduler(){
             StartingTreeSize =tree.size;
             VRUNTIME= 1;
             pause=false;
             stop=false;
+            animation=new Animation();
         }
 
         @Override
         public void run() {
             super.run();
 
+            animation.start();//run animation of items
             while(!pause || !stop){
                 try {
 
@@ -239,7 +278,7 @@ public class MainController implements Initializable {
                         process=WaitQueue.poll();
 
                         if(tree.search((Integer)process.element)==null){//check if burst time is in the tree
-                            tree.insert((Integer)process.element,process.RunTime);
+                            tree.insert((Integer)process.element,process.TargetRunTime);
                             Platform.runLater(new Runnable() {
                                 @Override
                                 public void run() {
@@ -272,6 +311,7 @@ public class MainController implements Initializable {
 
                     if(process != null){
 
+
                         //move process from tree to cpu
                         Platform.runLater(new Runnable() {
                             @Override
@@ -293,8 +333,8 @@ public class MainController implements Initializable {
 
                                 //if process burst time is not in the tree then add it
                                 if (tree.search((Integer)process.element)==null){
-                                    if(((Integer)process.element / process.RunTime)<2)//check if process time is finished
-                                        tree.insert((Integer)process.element,process.RunTime);
+                                    if(((Integer)process.element / process.TargetRunTime)<2)//check if process time is finished
+                                        tree.insert((Integer)process.element,process.TargetRunTime);
                                     /*else{
                                         System.out.println("Process Finished: ");
                                         System.out.println("Target RunTime "+process.RunTime);
@@ -302,7 +342,7 @@ public class MainController implements Initializable {
                                     }*/
 
                                 }else{
-                                    if(((Integer)process.element / process.RunTime)<2){//check if the process is finished
+                                    if(((Integer)process.element / process.TargetRunTime)<2){//check if the process is finished
                                         WaitQueue.add(process);
                                     } /*else{
                                         System.out.println("Process Finished: ");
@@ -348,6 +388,7 @@ public class MainController implements Initializable {
                                 tree.size=0;
                                 processInput.clear();
                                 vruntime.setText("");//reset vruntime
+                                animation.start=false;
                             }
                         });
                     }
@@ -371,4 +412,39 @@ public class MainController implements Initializable {
             this.stop = stop;
         }
     }
+
+    //responsible for animating objects
+    public class Animation extends Thread{
+        public boolean start=true;
+
+        public Animation(){
+
+        }
+
+        @Override
+        public void run(){
+            try{
+                while(start){
+
+                    indicator.setVisible(false);
+                    bus1.setBlendMode(BlendMode.EXCLUSION);
+                    bus2.setBlendMode(BlendMode.EXCLUSION);
+                    bus3.setBlendMode(BlendMode.EXCLUSION);
+                    bus4.setBlendMode(BlendMode.EXCLUSION);
+                    Thread.sleep(1000);
+                    indicator.setVisible(true);
+                    bus1.setBlendMode(null);
+                    bus2.setBlendMode(null);
+                    bus3.setBlendMode(null);
+                    bus4.setBlendMode(null);
+                    Thread.sleep(1000);
+
+                }
+
+            }catch (Exception e){
+
+            }
+        }
+    }
+
 }

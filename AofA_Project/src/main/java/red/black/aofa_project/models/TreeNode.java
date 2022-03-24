@@ -13,7 +13,7 @@ public class TreeNode<E extends Comparable<E>> implements Comparable<TreeNode> {
     public int height = 0;
     private boolean red = true;
     private String PID;
-    public int RunTime=0;
+    public int TargetRunTime =0;
 
     public TreeNode(){
 
@@ -24,10 +24,10 @@ public class TreeNode<E extends Comparable<E>> implements Comparable<TreeNode> {
         PID= UUID.randomUUID().toString();
     }*/
 
-    public TreeNode(E e,int RunTime){
+    public TreeNode(E e,int TargetRunTime){
         element = e;
         PID= UUID.randomUUID().toString();
-        this.RunTime=RunTime;
+        this.TargetRunTime = TargetRunTime;
     }
 
     public boolean isRed() {
