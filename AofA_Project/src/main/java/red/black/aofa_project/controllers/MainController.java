@@ -2,10 +2,13 @@ package red.black.aofa_project.controllers;
 
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -15,10 +18,11 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
+import org.controlsfx.control.Notifications;
+import red.black.aofa_project.models.Terminated;
 import red.black.aofa_project.models.TreeNode;
 import red.black.aofa_project.repository.*;
 import java.net.URL;
-import java.util.InputMismatchException;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.ResourceBundle;
@@ -63,6 +67,9 @@ public class MainController implements Initializable {
     @FXML
     private ImageView bus4;
 
+    @FXML
+    private Pane ResultPane;
+
 
     private BorderPane treePane;
     private CompletlyFairScheduler scheduler;
@@ -76,11 +83,13 @@ public class MainController implements Initializable {
     private TranslateTransition textTransition;
 
     private Queue<TreeNode> WaitQueue = new PriorityQueue<>();//store processes that has the same burst time of a process in the tree
-
+    private ObservableList<Terminated> finished = FXCollections.observableArrayList();
+    private TableView<Terminated> table = new TableView<>();
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         setupTreeViewer();
         addSchedulerControllers();
+        setupTable();
     }
 
     public void setupTreeViewer(){
@@ -189,25 +198,40 @@ public class MainController implements Initializable {
         processInput.clear();
 
     }
-    //function to remove node from tree
-    public void fetchProcess(Integer key){
-        TreeNode node = tree.search(key);
 
-        if(node==null){
-            view.displayTree();
-            view.setStatus(key +" is not present!");
+    //function to setup data table
+    public void setupTable(){
 
-        }
-        else {
+        TableColumn<Terminated,String>  PID = new TableColumn<>("PID");
+        PID.setCellValueFactory(new PropertyValueFactory<>("PID"));
 
-            view.displayTree();
-            view.setStatus(key + " is replaced by its predecessor and is deleted!");
+        TableColumn<Terminated,Integer> Start = new TableColumn<>("Start");
+        Start.setCellValueFactory(new PropertyValueFactory<>("Start"));
 
+        TableColumn<Terminated,Integer> End = new TableColumn<>("End");
+        End.setCellValueFactory(new PropertyValueFactory<>("End"));
 
-        }
+        table.setItems(finished);
+        table.getColumns().addAll(PID,Start,End);
+
+        ResultPane.getChildren().addAll(table);
     }
 
+    public void notification(String title,String body){
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                Notifications notify = Notifications.create().title(title)
+                        .text(body)
+                        .hideAfter(javafx.util.Duration.seconds(3))
+                        .position(Pos.TOP_RIGHT);
+                notify.darkStyle();
+                notify.showInformation();
+            }
+        });
 
+
+    }
 
     public void addSchedulerControllers(){
         pause.setDisable(true);
@@ -323,7 +347,7 @@ public class MainController implements Initializable {
 
                             }
                         });
-                        Thread.sleep(2000);
+                        Thread.sleep(4000);
 
                         //add back the process to tree
                         Platform.runLater(new Runnable() {
@@ -335,28 +359,28 @@ public class MainController implements Initializable {
                                 if (tree.search((Integer)process.element)==null){
                                     if(((Integer)process.element / process.TargetRunTime)<2)//check if process time is finished
                                         tree.insert((Integer)process.element,process.TargetRunTime);
-                                    /*else{
-                                        System.out.println("Process Finished: ");
-                                        System.out.println("Target RunTime "+process.RunTime);
-                                        System.out.println("Actual RunTime "+process.element);
-                                    }*/
+                                    else{//end of a process
+                                        process.element=process.TargetRunTime*2;
+                                        finished.add(new Terminated(process.getPID(),process.getTargetRunTime(),(Integer)process.getElement()));
+
+                                        notification("Process Termination","Process "+process.getPID()+" is finished");
+                                    }
 
                                 }else{
                                     if(((Integer)process.element / process.TargetRunTime)<2){//check if the process is finished
                                         WaitQueue.add(process);
-                                    } /*else{
-                                        System.out.println("Process Finished: ");
-                                        System.out.println("Target RunTime "+process.RunTime);
-                                        System.out.println("Actual RunTime "+process.element);
-                                    }*/
+                                        notification("Conflict","Process is added to a wait queue");
+                                    } else{//end of a process
+                                        finished.add(new Terminated(process.getPID(),process.getTargetRunTime(),(Integer)process.getElement()));
+                                        notification("Process Termination","Process "+process.getPID()+" is finished");
+                                    }
 
                                 }
 
                             }
                         });
-                        Thread.sleep(4000);
-                        //add process to tree end
 
+                        //remove process visibility
                         circleTransition.getNode().setVisible(false);
                         textTransition.getNode().setVisible(false);
 
@@ -374,6 +398,7 @@ public class MainController implements Initializable {
                         pause=true;
                         stop=true;
 
+                        System.out.println(finished.size());
 
                         //reset gui controller buttons
                         Platform.runLater(new Runnable() {

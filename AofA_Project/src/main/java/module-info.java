@@ -7,6 +7,7 @@ module red.black.aofa_project {
     requires org.kordamp.bootstrapfx.core;
 
     opens red.black.aofa_project to javafx.fxml;
+    opens red.black.aofa_project.models to javafx.base;
     exports red.black.aofa_project;
     exports red.black.aofa_project.controllers;
     opens red.black.aofa_project.controllers to javafx.fxml;

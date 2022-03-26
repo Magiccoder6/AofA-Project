@@ -51,6 +51,25 @@ public class TreeNode<E extends Comparable<E>> implements Comparable<TreeNode> {
         return PID;
     }
 
+    public E getElement() {
+        return element;
+    }
+
+    public void setElement(E element) {
+        this.element = element;
+    }
+
+    public void setPID(String PID) {
+        this.PID = PID;
+    }
+
+    public int getTargetRunTime() {
+        return TargetRunTime;
+    }
+
+    public void setTargetRunTime(int targetRunTime) {
+        TargetRunTime = targetRunTime;
+    }
 
     @Override
     public int compareTo(TreeNode o) {
