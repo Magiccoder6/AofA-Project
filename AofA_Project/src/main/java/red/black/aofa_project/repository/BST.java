@@ -11,13 +11,14 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 
-@Author(name = "Ankit Sharma", date = "12 Oct 2018",URL = "https://github.com/beingmartinbmc/LearnTrees/blob/master/src/trees/gui/redBlack")
+@Author(name = "Shemar Edwards, Ankit Sharma", date = "12 Oct 2018",URL = "https://github.com/beingmartinbmc/LearnTrees/blob/master/src/trees/gui/redBlack")
 public class BST<E extends Comparable<E>> implements Tree<E> {
 
     public TreeNode<E> root;
     public int size = 0;
 
     public BST() {
+
     }
 
     public BST(E[] objects,int RunTime) {
@@ -29,6 +30,7 @@ public class BST<E extends Comparable<E>> implements Tree<E> {
     }
 
     private TreeNode<E> search(TreeNode<E> root, E e){
+
         if(root == null)
             return null;
         else if(e.compareTo(root.element) == 0)
@@ -56,17 +58,16 @@ public class BST<E extends Comparable<E>> implements Tree<E> {
         if(root == null)
             root = createNewNode(e,RunTime);
         else{
-            if(e.compareTo(root.element) > 0)
-                root.right = insert(root.right, e,RunTime);
+            if(e.compareTo(root.element) > 0)//checking to see if the inserted number is greater than elements in the tree
+                root.right = insert(root.right, e,RunTime);//add to right
             else if(e.compareTo(root.element) < 0)
                 root.left = insert(root.left, e,RunTime);
             else
-                return null;
+                return null;//if the number is already in the tree
         }
         return root;
 
     }
-
 
     @Override
     public boolean insert(E e,int RunTime) {
