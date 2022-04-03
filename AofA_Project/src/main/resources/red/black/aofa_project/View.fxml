@@ -45,7 +45,7 @@
                </image>
             </ImageView>
             <Label layoutX="14.0" layoutY="6.0" prefHeight="17.0" prefWidth="97.0" text="Process Runtime:" />
-            <Label fx:id="vruntime" layoutX="111.0" layoutY="6.0" prefHeight="17.0" prefWidth="50.0" text="Secs">
+            <Label fx:id="vruntime" layoutX="111.0" layoutY="6.0" prefHeight="17.0" prefWidth="50.0" text="MS">
                <font>
                   <Font name="System Bold" size="12.0" />
                </font>
@@ -55,6 +55,12 @@
                   <Glow level="0.21" />
                </effect>
             </Circle>
+            <Label layoutX="14.0" layoutY="35.0" prefHeight="17.0" prefWidth="97.0" text="Wait Queue" />
+            <Label fx:id="WaitQueueLabel" layoutX="111.0" layoutY="35.0" prefHeight="17.0" prefWidth="50.0" text="0">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
+            </Label>
          </children>
       </Pane>
       <Pane fx:id="controlsPane" layoutX="709.0" layoutY="92.0" prefHeight="75.0" prefWidth="549.0" style="-fx-background-color: white;">
@@ -95,5 +101,30 @@
          </children>
       </Pane>
       <Pane fx:id="ResultPane" layoutX="1279.0" layoutY="92.0" prefHeight="560.0" prefWidth="248.0" style="-fx-background-color: white;" />
+      <Label layoutX="198.0" layoutY="36.0" prefHeight="55.0" prefWidth="78.0" text="Red" textFill="#ef0303">
+         <font>
+            <Font name="System Bold" size="38.0" />
+         </font>
+      </Label>
+      <Label layoutX="732.0" layoutY="36.0" prefHeight="55.0" prefWidth="502.0" text="Completely Fair Scheduler" textFill="#f7f5f5">
+         <font>
+            <Font name="System Bold" size="38.0" />
+         </font>
+      </Label>
+      <Label layoutX="1279.0" layoutY="36.0" prefHeight="55.0" prefWidth="248.0" text="TERMINATED" textFill="#ef0303">
+         <font>
+            <Font name="System Bold" size="38.0" />
+         </font>
+      </Label>
+      <Label layoutX="283.0" layoutY="36.0" prefHeight="55.0" prefWidth="113.0" text="Black" textFill="#151515">
+         <font>
+            <Font name="System Bold" size="38.0" />
+         </font>
+      </Label>
+      <Label layoutX="386.0" layoutY="36.0" prefHeight="55.0" prefWidth="97.0" text="Tree" textFill="#f7f5f5">
+         <font>
+            <Font name="System Bold" size="38.0" />
+         </font>
+      </Label>
    </children>
 </AnchorPane>

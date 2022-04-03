@@ -36,6 +36,8 @@ public class MainController implements Initializable {
     private Pane controlsPane;
     @FXML
     private Pane processorPane;
+    @FXML
+    private Label WaitQueueLabel;
 
     @FXML
     private ImageView pause;
@@ -245,6 +247,7 @@ public class MainController implements Initializable {
                 play.setDisable(true);
                 pause.setDisable(false);
                 stop.setDisable(false);
+                finished.clear();
             }
 
         });
@@ -307,7 +310,9 @@ public class MainController implements Initializable {
                                 @Override
                                 public void run() {
                                     view.displayTree();
+                                    WaitQueueLabel.setText(Integer.toString(WaitQueue.size()));
                                 }
+
                             });
                             Thread.sleep(1000);
 
@@ -320,6 +325,7 @@ public class MainController implements Initializable {
                             TreeNode min = tree.findMin(tree.getRoot());//find the process with the smallest burst time
                             process = tree.delete((Integer)min.element);//fetch node from tree
                         }
+
 
                     }
                     else{
@@ -369,6 +375,7 @@ public class MainController implements Initializable {
                                 }else{
                                     if(((Integer)process.element / process.TargetRunTime)<2){//check if the process is finished
                                         WaitQueue.add(process);
+                                        WaitQueueLabel.setText(Integer.toString(WaitQueue.size()));
                                         notification("Conflict","Process is added to a wait queue");
                                     } else{//end of a process
                                         finished.add(new Terminated(process.getPID(),process.getTargetRunTime(),(Integer)process.getElement()));
@@ -414,6 +421,7 @@ public class MainController implements Initializable {
                                 processInput.clear();
                                 vruntime.setText("");//reset vruntime
                                 animation.start=false;
+
                             }
                         });
                     }

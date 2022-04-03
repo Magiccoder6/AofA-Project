@@ -26,6 +26,7 @@ public class Main extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("View.fxml"));
         Scene scene = new Scene(fxmlLoader.load(),screenBounds.getWidth(), screenBounds.getHeight()-(screenBounds.getHeight()/5));
         primaryStage.setTitle("Completely Fair Scheduler");
+        primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("images/cpu.png")));
         primaryStage.setScene(scene);
         primaryStage.show();
 
